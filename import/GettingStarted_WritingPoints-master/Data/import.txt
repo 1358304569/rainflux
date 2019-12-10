@@ -1,0 +1,12 @@
+# DDL
+CREATE DATABASE import
+
+# DML
+# CONTEXT-DATABASE: import
+
+price,type=BTC close=968.29,high=968.29,low=968.29,open=968.29,volume=0 1483228740000000000
+price,type=BTC close=968.7,high=968.76,low=968.49,open=968.29,volume=12993 1483228800000000000
+price,type=BTC close=968.43,high=968.7,low=967.2,open=968.7,volume=73800 1483228860000000000
+price,type=BTC close=967.21,high=968.0,low=967.21,open=968.43,volume=3500 1483228920000000000
+price,type=BTC close=965.0,high=965.86,low=964.99,open=966.05,volume=103237 1483229520000000000
+

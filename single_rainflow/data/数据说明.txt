@@ -1,0 +1,9 @@
+# 这是测试程序所用到、或生成的数据的说明
+
+
+point_19-22_very_little.asc 为原始数据文件
+
+cyle_count.csv 为最终输出的雨流计数矩阵
+
+Fcycle_count.png 本应设置为最终的雨流图，但是此处为PSD波形图
+
