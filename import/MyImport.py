@@ -20,6 +20,7 @@ def asc_to_df(asc_file):
 	# 获取开始时间
 	time_creative = get_FileCreateTime(asc_file)
 	start_time = time.strftime("%Y--%m--%d %H:%M:%S", time.localtime(time_creative))
+
 	# 倒入文件
 	df = pd.DataFrame(pd.read_csv(asc_file, header=None, names=['Point']))
 	# 读取END所在行的行数
@@ -89,18 +90,23 @@ def df_import(df):
 
 def main(asc_file):
 	df = asc_to_df(asc_file)
-	# print(df.iloc[-5:,:])
+	print(df.iloc[-5:,:])
+	print(df.iloc[:5,:])
 	# print(df.index.values.tolist()[200])
-	df_import(df)
+	# df_import(df)
 	# result_set = df_import(df)
 	# print(type(result_set)
 
 
 
-asc_file = r'D:\Project\influx_test\point_19--22_part.asc'
+# asc_file = r'D:\Project\influx_test\point_19--22_part.asc'
+
+# 2019-12-19 mac路径
+asc_file = r'/Users/zhouyijian/Desktop/data/point_19-22_little.asc'
 
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
 	main(asc_file)
 
 
