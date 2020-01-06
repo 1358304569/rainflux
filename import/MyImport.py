@@ -2,9 +2,10 @@
 
 # ========================小周使用python操作influx的基础测试--2018-12-13-==============
 
-
+import argparse
 import time
 import os
+import random
 import pandas as pd
 import numpy as np
 from influxdb import DataFrameClient
@@ -16,13 +17,15 @@ def get_FileCreateTime(filePath):
     return t
 
 
-def asc_to_df(asc_file):
+def asc_to_df(asc_file, tags):
 	# 获取开始时间
 	time_creative = get_FileCreateTime(asc_file)
 	start_time = time.strftime("%Y--%m--%d %H:%M:%S", time.localtime(time_creative))
 
 	# 倒入文件
 	df = pd.DataFrame(pd.read_csv(asc_file, header=None, names=['Point']))
+
+	# 预处理，删除表头，获取时间戳
 	# 读取END所在行的行数
 	line_end = df[df['Point'].isin(['END'])].index.values
 	# 删除前面几行表头
@@ -50,35 +53,40 @@ def asc_to_df(asc_file):
 	df_split = pd.DataFrame((x.split() for x in df_data['Point']), 
 							index=pd.date_range(start=start_time, periods=len(df_data), end=end_time))
 
-	# 修改列明
+	# 修改列名
 	df_split.columns = columns_family[:df_split.columns.size]
+
+	# 增加 tag列
+
+	cities = []
+	for i in range(df_split.shape[0]):
+		cities.append(random.choice(tags.get("cities")))
+	df_split["cities"] = cities
 	return df_split
 
 
 
-def df_import(df):
+# def add_tags(df, ):
+
+
+def df_import(df, host, port):
 
 	# 各个参数
-	host = 'localhost'
-	port = 8086
-	user = 'test'
-	password = 'test'
-	dbname = 'test1'
+	user = 'admin'
+	password = 'admin'
+	dbname = 'test'
 	# protocol = 'json'
-	# measurement = 'inputFromPython'
 
-	# df = pd.DataFrame(data=list(range(14401)),
-	# 	index=pd.date_range(start='2018-11-16 16:00:00', freq='s', end='2018-11-16 20:00:00'))
-	
 
 	# 连接
-	# client = InfluxDBClient(host, port, user, password, dbname)	
 	client = DataFrameClient(host, port, user, password, dbname)
-	# 创建数据库
-	# client.create_database(dbname)
+
+	# 截取demo测试
+	df = df.iloc[:10000, :]
 	# 写入数据
-	client.write_points(df, 'little', time_precision='ms', batch_size=65536)
+	client.write_points(df, 'conjunction_demo', tag_columns=["cities"], time_precision='ms', batch_size=5000)
 	# client.write_points(json_body)
+
 	# 查询数据
 	# result_set = client.query("SELECT * FROM inputFromPython LIMIT 5")
 	# return result_set
@@ -88,31 +96,51 @@ def df_import(df):
 # df_import()
 
 
-def main(asc_file):
-	df = asc_to_df(asc_file)
-	print(df.iloc[-5:,:])
-	print(df.iloc[:5,:])
-	# print(df.index.values.tolist()[200])
-	# df_import(df)
-	# result_set = df_import(df)
-	# print(type(result_set)
+def main(asc_file, host='localhost', port=8086):
+
+	tags = {
+		"carriages": [93101, 91386],
+		"stations": ["莘庄", "上海南站", "汶水路"],
+		"cities": ["上海", "重庆", "广州",  "九江",  "南昌",  "深圳", "曼哈顿"]
+	}
 
 
+	# convert local asc file to dataframe format
+	df = asc_to_df(asc_file, tags)
 
-# asc_file = r'D:\Project\influx_test\point_19--22_part.asc'
+
+	# test
+	# print(df.iloc[-5:,:])
+	# print(df.iloc[:5,:])
+
+	# import dataframe into influxdb
+	df_import(df, host, port)
+
 
 # 2019-12-19 mac路径
 asc_file = r'/Users/zhouyijian/Desktop/data/point_19-22_little.asc'
 
 
 
+# cmd启动参数
+def parse_args():
+    """Parse the args from main."""
+    parser = argparse.ArgumentParser(
+        description='example code to play with InfluxDB')
+    parser.add_argument('--host', type=str, required=False,
+                        default='localhost',
+                        help='hostname of InfluxDB http API')
+    parser.add_argument('--port', type=int, required=False, default=8086,
+                        help='port of InfluxDB http API')
+    return parser.parse_args()
+
+
 if __name__ == '__main__':
-	main(asc_file)
+    args = parse_args()
+    main(asc_file, host=args.host, port=args.port)
 
 
-
-
-
+# DataFrameClient —— write_point 用法
 # write_points(dataframe, measurement, tags=None, tag_columns=None, 
 #field_columns=None, time_precision=None, database=None, retention_policy=None, 
 #batch_size=None, protocol=u'line', numeric_precision=None)
